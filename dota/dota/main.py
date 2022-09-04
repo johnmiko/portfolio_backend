@@ -2,10 +2,11 @@ import numpy as np
 import pandas as pd
 import requests
 
+from constants import DOTA_DIR
 from dota.dota.calcs import calc_teamfight_stats, calc_gold_adv_rate, calc_gold_adv_std, calc_min_in_lead, \
     calc_max_gold_swing, calc_game_is_close, get_team_names, get_date_stuff, create_title, calc_game_num
 from dota.dota.score import linear_map
-from dota.dota.utils import print_highlights_df, print_whole_game_df
+from dota.dota.utils import print_highlights_df, print_whole_game_df, create_highlights_df
 
 
 def get_interesting_games():
@@ -78,7 +79,11 @@ def get_interesting_games():
 
     # Remove games I've already watched, manually updated?
     # Easier, is to make myself a GUI, then click a button to say I watched that game already
-    df_watched = pd.read_csv('../text/already_watched.txt', header=0)
+    # try:
+    df_watched = pd.read_csv(DOTA_DIR + 'text/already_watched.txt', header=0)
+    # except FileNotFoundError:
+    #     open('../text/already_watched.txt', 'a').close()
+    df_watched = pd.DataFrame(columns=['match_id', 'last_watched_on', 'times_watched'])
     df = df[~df['match_id'].isin(df_watched['match_id'])]
 
     df['total_kills'] = df['radiant_score'] + df['dire_score']
@@ -167,7 +172,8 @@ def get_interesting_games():
                       'swing_score', 'win_team_barracks_dif',
                       'barracks_comeback_score']
     df = df.sort_values('highlights_score')
+    df_highlights = create_highlights_df(df, highlight_cols)
     print_highlights_df(df, highlight_cols)
     df2 = df.sort_values('highlights_score')
     print_whole_game_df(df2, whole_game_cols)
-    return df
+    return df_highlights

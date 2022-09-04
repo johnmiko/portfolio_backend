@@ -1,6 +1,14 @@
-from dota.ease_of_use import pdf
+from dota.dota.ease_of_use import pdf
 
 print_cols = ['title', 'time_ago']
+
+
+def create_highlights_df(df, cols, rows=10):
+    cols2 = print_cols
+    cols2.extend(cols)
+    df = df.sort_values('highlights_score', ascending=False)
+    df = df.set_index('match_id')
+    return df[cols2].head(rows)
 
 
 def print_highlights_df(df, cols, rows=10):
