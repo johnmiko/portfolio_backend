@@ -6,7 +6,7 @@ from constants import DOTA_DIR
 from dota.dota.calcs import calc_teamfight_stats, calc_gold_adv_rate, calc_gold_adv_std, calc_min_in_lead, \
     calc_max_gold_swing, calc_game_is_close, get_team_names, get_date_stuff, create_title, calc_game_num
 from dota.dota.score import linear_map
-from dota.dota.utils import print_highlights_df, print_whole_game_df, create_highlights_df
+from dota.dota.utils import create_highlights_df
 
 
 def get_interesting_games():
@@ -173,7 +173,7 @@ def get_interesting_games():
                       'barracks_comeback_score']
     df = df.sort_values('highlights_score')
     df_highlights = create_highlights_df(df, highlight_cols)
-    print_highlights_df(df, highlight_cols)
-    df2 = df.sort_values('highlights_score')
-    print_whole_game_df(df2, whole_game_cols)
+    # print_highlights_df(df, highlight_cols)
+    # df2 = df.sort_values('highlights_score')
+    # print_whole_game_df(df2, whole_game_cols)
     return df_highlights

@@ -6,6 +6,7 @@ print_cols = ['title', 'time_ago']
 def create_highlights_df(df, cols, rows=10):
     cols2 = print_cols
     cols2.extend(cols)
+    cols2 = list(set(cols2))
     df = df.sort_values('highlights_score', ascending=False)
     df = df.set_index('match_id')
     return df[cols2].head(rows)
