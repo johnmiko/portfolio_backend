@@ -8,6 +8,10 @@ selenium = "*"
 pandas = "*"
 fastapi = {extras = ["all"], version = "*"}
 scipy = "*"
+moviepy = "*"
+sqlalchemy = "*"
+pymysql = "*"
+django = "*"
 
 [dev-packages]
 

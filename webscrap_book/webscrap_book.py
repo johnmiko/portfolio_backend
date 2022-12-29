@@ -11,17 +11,18 @@ from utils import Websites, WebsiteFactory, Book
 
 
 page_1 = '1'
-total_pages = '196'
-website = WebsiteFactory.create(Websites.all_free_novel)
-BASE_URL = website.base_url
-BOOK_NUM = '75670'
-BOOK_NAME = 'The Lost Metal'
+total_pages = '133'
+BOOK_NUM = '10077539'
+BOOK_NAME = 'Project Hail Mary'
 book = Book(BOOK_NUM, BOOK_NAME)
+# https://gemibook.com/project-hail-mary/p-1-10077539
+website = WebsiteFactory.create(Websites.gemibook)
+BASE_URL = website.base_url
 
 folder = f'webscrap_book/{book.name_underscore}/'
 if not os.path.exists(folder):
     os.makedirs(folder)
-fname = f'folder{book.name}.txt'
+fname = f'{folder}{book.name}.txt'
 # driver.find_element(By.CLASS_NAME, 'columns large-12 medium-12 small-12')
 # //*[@id="mainContent"]/div/div/div[2]/text()[2]
 # source = driver.page_source

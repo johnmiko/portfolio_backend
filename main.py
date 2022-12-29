@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from dota.dota.main import get_interesting_games
+from dota.app.main import get_interesting_games
 
 # create_logger()
 app = FastAPI()
@@ -27,9 +27,9 @@ async def root():
 @app.get("/dota")
 async def read_item():
     print('getting interesting dota games')
-    df = get_interesting_games()
-    print(df.columns)
-    return df.to_dict('records')
+    df_highlights, df_wholegame = get_interesting_games()
+    print(df_highlights)
+    return df_highlights.to_dict('records')
 
 
 if __name__ == "__main__":

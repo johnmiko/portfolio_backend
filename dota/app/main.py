@@ -1,15 +1,17 @@
+# https://overwolf.github.io/api/media/replays/auto-highlights
 import numpy as np
-import pandas as pd
 import requests
+from sqlalchemy import create_engine
+import pandas as pd
 
 from constants import DOTA_DIR
-from dota.dota.calcs import calc_teamfight_stats, calc_gold_adv_rate, calc_gold_adv_std, calc_min_in_lead, \
+from dota.app.calcs import calc_teamfight_stats, calc_gold_adv_rate, calc_gold_adv_std, calc_min_in_lead, \
     calc_max_gold_swing, calc_game_is_close, get_team_names, get_date_stuff, create_title, calc_game_num
-from dota.dota.score import linear_map
-from dota.dota.utils import create_highlights_df
+from dota.app.score import linear_map
+from dota.app.utils import create_highlights_df, create_wholegame_df, print_highlights_df, print_whole_game_df
 
 
-def get_interesting_games():
+def get_latest_data():
     url = 'https://api.opendota.com/api/proMatches'
 
     # what makes a game interesting?
@@ -56,6 +58,12 @@ def get_interesting_games():
     AND name not like '%Division II%'
     ORDER BY matches.start_time DESC
     LIMIT {limit}"""
+    url = f"""https://api.opendota.com/api/explorer?sql=SELECT * 
+    FROM matches
+    JOIN leagues using(leagueid)
+    WHERE name not like '%Division II%'
+    ORDER BY matches.start_time DESC
+    LIMIT {limit}"""
     # JOIN match_patch using(match_id)
     # LEFT JOIN teams on teams.team_id = dire_team_id or teams.team_id = radiant_team_id
     # WHERE matches.start_time >= extract(epoch from timestamp '{oldest_date}T0:00:00.000Z')
@@ -65,6 +73,33 @@ def get_interesting_games():
     matches = r.json()['rows']
     df_raw = pd.DataFrame(matches)
     df_raw['start_time'] = df_raw['start_time'].fillna(0)
+    return df_raw
+
+def update_csv_db(fname, df_new):
+    df = pd.read_csv(question_file, delimiter=',', encoding='latin1')
+    # Remove unanswered questions if any
+    # Should only need done once, but was needed when the line of code did not exist
+    df_answered = df[~df['answer'].isna()]
+    df_unanswered = pd.read_csv(unanswered_question_file, delimiter=',', encoding='latin1')
+    df3 = pd.concat([df_answered, df_unanswered])
+    df3['question'] = df3['question'].str.lower()
+    for fluff in QUESTION_FLUFF:
+        df3['question'] = df3['question'].str.replace(fluff, '')
+    df3['question'] = df3['question'].str.strip()
+    df3 = df3.drop_duplicates('question')
+    df3['times_asked'] = df3['times_asked'].fillna(1)
+    df3 = df3.sort_values('times_asked', ascending=False)
+    df4 = df3[df3['answer'].isna()]
+    df5 = df3[~df3['answer'].isna()]
+    df4.to_csv(unanswered_question_file, sep=',', header=True, index=False, encoding='latin1')
+    df5.to_csv(question_file, sep=',', header=True, index=False, encoding='latin1')
+    df3 = df3.reset_index(drop=True)
+    return df3
+
+
+def get_interesting_games():
+    df_raw = get_latest_data()
+
     df_raw['date'] = pd.to_datetime(df_raw['start_time'], unit='s')
     df = df_raw
     # Remove div 2 games for now. Just give them a weight at some point and keep them in
@@ -173,7 +208,8 @@ def get_interesting_games():
                       'barracks_comeback_score']
     df = df.sort_values('highlights_score')
     df_highlights = create_highlights_df(df, highlight_cols)
-    # print_highlights_df(df, highlight_cols)
+    df_wholegame = create_wholegame_df(df, whole_game_cols)
+    print_highlights_df(df, highlight_cols)
     # df2 = df.sort_values('highlights_score')
-    # print_whole_game_df(df2, whole_game_cols)
-    return df_highlights
+    print_whole_game_df(df, whole_game_cols)
+    return df_highlights, df_wholegame
